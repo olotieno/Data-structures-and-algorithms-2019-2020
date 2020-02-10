@@ -1,0 +1,6 @@
+Singly-linked
+-pushFirst
+-pushAt
+-pushBack
+-removeAt
+-reverse
