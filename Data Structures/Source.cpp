@@ -1,116 +1,201 @@
 #include <iostream>
-#include <vector>
+#include <queue>
 using namespace std;
 
-class Heap
+struct Node
 {
-private:
-	vector<int> arr;
-	int size = 0;
-
-	int parent(int index)
+	int value;
+	Node* leftChild;
+	Node* rightChild;
+	Node(int val)
 	{
-		return (index - 1) / 2;
-	}
-	int leftChild(int index)
-	{
-		return index * 2 + 1;
-	}
-	int rightChild(int index)
-	{
-		return index * 2 + 2;
-	}
-	bool hasLeftChild(int index)
-	{
-		return leftChild(index) < size;
-	}
-	bool hasRightChild(int index)
-	{
-		return rightChild(index) < size;
-	}
-
-	void pullUp(int index)
-	{
-		while (arr[index] > arr[parent(index)] && index > 0)
-		{
-			swap(arr[index], arr[parent(index)]);
-			index = parent(index);
-		}
-	}
-	void heapify(int index)
-	{
-		while (index < size)
-		{
-			int maxChild = leftChild(index);
-			if (hasRightChild(index) && arr[rightChild(index)] > arr[maxChild])
-			{
-				maxChild = rightChild(index);
-			}
-			if (hasLeftChild(index) && arr[index] < arr[maxChild])
-			{
-				swap(arr[index], arr[maxChild]);
-				index = maxChild;
-			}
-			else
-			{
-				break;
-			}
-		}
-	}
-
-public:
-	Heap()
-	{
-		this->size = 0;
-	}
-	void insert(int value)
-	{
-		if (size == 0)
-		{
-			arr.push_back(value);
-			size++;
-		}
-		else
-		{
-			arr.push_back(value);
-			pullUp(size);
-			size++;
-		}
-	}
-	void extractMax()
-	{
-		swap(arr[0], arr[size - 1]);
-		size--;
-		heapify(0);
-	}
-	int getMax()
-	{
-		return arr[0];
-	}
-	void print()
-	{
-		for (int i = 0; i < size; i++)
-		{
-			cout << arr[i] << " ";
-		}
-		cout << "\n";
+		this->value = val;
+		this->leftChild = NULL;
+		this->rightChild = NULL;
 	}
 };
 
+class BST
+{
+private:
+	Node* root;
+	int size = 0;
+
+	Node* findMax(Node* curr)
+	{
+		while (curr->rightChild != NULL)
+		{
+			curr = curr->rightChild;
+		}
+		return curr;
+	}
+	Node* _insert(Node* curr, int val)
+	{
+		if (curr == NULL)
+		{
+			this->size++;
+			return new Node(val);
+		}
+		else if (curr->value < val)
+		{
+			curr->rightChild = _insert(curr->rightChild, val);
+		}
+		else if (curr->value > val)
+		{
+			curr->leftChild = _insert(curr->leftChild, val);
+		}
+
+		return curr;
+	}
+	Node* _remove(Node* curr, int val)
+	{
+		if (curr == NULL)
+		{
+			return NULL;
+		}
+		if (curr->value > val)
+		{
+			curr->leftChild = _remove(curr->leftChild, val);
+		}
+		else if (curr->value < val)
+		{
+			curr->rightChild = _remove(curr->rightChild, val);
+		}
+		else
+		{
+			if (curr->leftChild == NULL)
+			{
+				Node* tmp = curr->rightChild;
+				delete curr;
+				return tmp;
+			}
+			else
+			{
+				Node* tmp = findMax(curr->leftChild);
+				curr->value = tmp->value;
+				curr->leftChild = _remove(curr->leftChild, curr->value);
+				return curr;
+			}
+		}
+		return curr;
+	}
+	void inorder(Node* curr)
+	{
+		if (curr == NULL)
+		{
+			return;
+		}
+		inorder(curr->leftChild);
+		cout << curr->value << " ";
+		inorder(curr->rightChild);
+	}
+	void preorder(Node* curr)
+	{
+		if (curr == NULL)
+		{
+			return;
+		}
+		cout << curr->value << " ";
+		preorder(curr->leftChild);
+		preorder(curr->rightChild);
+	}
+	void postOrder(Node* curr)
+	{
+		if (curr == NULL)
+		{
+			return;
+		}
+		postOrder(curr->rightChild);
+		postOrder(curr->leftChild);
+		cout << curr->value << " ";
+	}
+
+public:
+	BST()
+	{
+		this->root = NULL;
+	}
+	void insert(int val)
+	{
+		Node* newNode = new Node(val);
+		if (size == 0)
+		{
+			this->size++;
+			this->root = newNode;
+		}
+		else
+		{
+			_insert(root, val);
+		}
+	}
+	void remove(int val)
+	{
+		if (this->size == 1 && this->root->value == val)
+		{
+			Node* oldRoot = this->root;
+			this->root = NULL;
+			delete oldRoot;
+		}
+		else
+		{
+			_remove(root, val);
+		}
+	}
+	void inorderPrint()
+	{
+		inorder(this->root);
+		cout << endl;
+	}
+	void printByLayers()
+	{
+		queue<Node*> nextToPrint;
+		nextToPrint.push(this->root);
+		while (!nextToPrint.empty())
+		{
+			Node* curr = nextToPrint.front();
+			cout << curr->value << " ";
+			nextToPrint.pop();
+			if (curr->leftChild != NULL)
+			{
+				nextToPrint.push(curr->leftChild);
+			}
+			if (curr->rightChild != NULL)
+			{
+				nextToPrint.push(curr->rightChild);
+			}
+		}
+		cout << "\n";
+	}
+	void preorderPrint() // root-left-right
+	{
+		preorder(this->root);
+		cout << endl;
+	}
+	void postorderPrint() //righ-left-root
+	{
+		postOrder(this->root);
+		cout << endl;
+	}
+};
+
+
 int main()
 {
-	Heap* heap = new Heap();
-	heap->insert(10);
-	heap->insert(11);
-	heap->insert(7);
-	heap->insert(8);
-	heap->insert(5);
-	heap->insert(4);
-	heap->insert(3);
-	cout << heap->getMax() << "\n";
-	heap->extractMax();
-	heap->print();
-
+	//5
+	//6 4 2 5 3
+	BST* bst = new BST();
+	bst->insert(10);
+	bst->insert(15);
+	bst->insert(13);
+	bst->insert(12);
+	bst->insert(14);
+	bst->insert(7);
+	bst->insert(9);
+	bst->insert(6);
+	bst->insert(4);
+	bst->inorderPrint();
+	bst->remove(10);
+	bst->inorderPrint();
 
 	int x;
 	cin >> x;
