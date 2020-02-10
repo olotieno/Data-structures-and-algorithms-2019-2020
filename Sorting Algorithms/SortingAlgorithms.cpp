@@ -2,7 +2,7 @@
 using namespace std;
 
 
-//BIBBLE SORT
+//BUBBLE SORT
 void bubbleSort(int* arr, int n)
 {
 	for (int i = 0; i < n; i++)
